@@ -1,9 +1,9 @@
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
+// const ipcMain = require('./app/js/eventHandler')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
-let newTaskWindow
 
 function createWindow () {
   // Create the browser window.
@@ -43,5 +43,43 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (win === null) {
     createWindow()
+  }
+})
+
+////////////////////////////////////////////////////////////////////////
+// event handler handles all events through ipc channels
+let newTaskWindow
+
+function createNewTaskWindow(event, arg) {
+  if(newTaskWindow == null) {
+    newTaskWindow = new BrowserWindow({
+      width: 640,
+      height: 480,
+      // show: false
+    })
+
+    newTaskWindow.loadURL(`file://${__dirname}/app/newTask.html`)
+    newTaskWindow.show()
+
+    newTaskWindow.on('closed',function() {
+      newTaskWindow = null;
+    })
+  }
+  // if windows created already, show it
+  else {
+    newTaskWindow.focus();
+  }
+}
+
+ipcMain.on('new-task-window', function(event, arg) {
+  createNewTaskWindow(event, arg);
+})
+
+
+ipcMain.on('focus-main', function(event, arg) {
+  if (win === null) {
+    createWindow();
+  } else {
+    win.focus();
   }
 })

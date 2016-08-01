@@ -705,6 +705,10 @@ img {
   border-radius: 50%;
 }
 
+.img-circle:hover {
+  -webkit-filter: sepia(0.6);
+}
+
 .img-rounded {
   border-radius: 4px;
 }
