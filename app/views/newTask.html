@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+        <h1>Create new project</h1>
+        <form>
+          <div class="form-group">
+            <label>Project Name</label>
+            <input class="form-control" ng-model="newTask.name">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input class="form-control" ng-model="newTask.description">
+          </div>
+          <!-- <select class="form-control">
+            <option>Option one</option>
+            <option>Option two</option>
+            <option>Option three</option>
+            <option>Option four</option>
+            <option>Option five</option>
+            <option>Option six</option>
+            <option>Option seven</option>
+            <option>Option eight</option>
+          </select>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox"> This is a checkbox
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="radios" checked>
+              Keep your options open
+            </label>
+          </div> -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-form btn-primary" ng-click="submitNewTask()">OK</button>
+            <button class="btn btn-form btn-default" ng-click="gotoPage('home')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

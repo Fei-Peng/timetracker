@@ -1,34 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="timeTrackerApp">
   <head>
     <meta charset="UTF-8">
     <title>Time Tracker Yo!</title>
 
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/photon.css">
 
     <!-->In Electron, this is the correct way to include jQuery<-->
-    <script>window.$ = require('./js/jquery-3.1.0.min.js');</script>
-    require('bootstrap')
-    <script src="js/index.js"></script>
+    <script>window.$ = require('./js/vendor/jquery-3.1.0.min.js');</script>
+    <script src="js/vendor/angular-1.5.8.min.js"></script>
   </head>
 
-  <body>
+  <body ng-controller="mainController">
 
     <div class="window">
 
       <header class="toolbar toolbar-header">
         <br>
         <div class="toolbar-actions">
-          <button class="btn btn-default active" id="main">
+          <button class="btn btn-default active" ng-click="gotoPage('home')">
             <span class="icon icon-home"></span>
           </button>
           <div class="btn-group">
-            <button class="btn btn-default">
-              <span class="icon icon-list-add icon-text" id="new_task"></span>
+            <button class="btn btn-default" ng-click="gotoPage('newTask')">
+              <span class="icon icon-list-add icon-text"></span>
               New Task
             </button>
-            <button class="btn btn-default" id="export">
+            <button class="btn btn-default">
               <span class="icon icon-export icon-text"></span>
               Export..
             </button>
@@ -44,21 +44,38 @@
         <div class="pane-group">
           <div class="pane-one-fourth sidebar">
             <ul class="list-group">
-              <li class="list-group-item">
+              <li class="list-group-item" ng-repeat="task in tasks">
                 <img class="img-circle media-object pull-left" src="img/zh.png" width="32" height="32">
                 <div class="media-body">
-                  <strong>List item title</strong>
+                  <strong>{{task.name}}</strong>
                   <span class="icon icon icon-cancel-circled media-object pull-right"></span>
-                  <p>Lorem ipsum dolor sit amet.</p>
+                  <p>{{task.description}}</p>
                 </div>
               </li>
             </ul>
           </div>
 
-          <div class="pane">...</div>
+          <div class="pane">
+            <div ng-switch="page">
+              <div ng-switch-when="home">
+                <div ng-include="'./views/home.html'"></div>
+              </div>
+              <div ng-switch-when="newTask">
+                <div ng-include="'./views/newTask.html'"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+
+    <!-- Dependencies -->
+    <script src="js/setup.js"></script>
+    <script src="js/services/db.js"></script>
+    <script src="js/controllers/main.js"></script>
+
   </body>
+
+
 </html>
