@@ -10,10 +10,13 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   electronSvc.db.getCompletedTasks(getCompletedTasksCallback);
 
   $scope.totalTime = {}
+  $scope.totalSeconds = {}
+  $scope.totalMinutes = {}
+  $scope.totalHours = {}
   $scope.newTask = {};
   // var taskMap = {};
 
-  // timer
+  /////////////// timer ///////////////
   $scope.timer = {};
   $scope.seconds = {};
   $scope.minutes = {};
@@ -27,6 +30,12 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     $scope.hours[id] = Math.floor($scope.timer[id] / 3600);
   }
 
+  function computeTotalTime(id) {
+    $scope.totalSeconds[id] = $scope.totalTime[id] % 60;
+    $scope.totalMinutes[id] = Math.floor(($scope.totalTime[id] / 60)) % 60;
+    $scope.totalHours[id] = Math.floor($scope.totalTime[id] / 3600);
+  }
+
   function stopTimer(id) {
     console.log('Timer stop');
     $scope.timerRunning[id] = false;
@@ -34,6 +43,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       $interval.cancel(intervals[id]);
       intervals[id] = undefined;
     }
+    $scope.totalTime[id] += $scope.timer[id];
+    computeTotalTime(id);
   };
 
   function restartTimer(id) {
@@ -57,34 +68,64 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     }
   };
 
-  // $scope.$on('tick', function(args) {
-  //   if ($scope.timerRunning[args[0]]) { tick(args[0]); }
-  // })
+  ///////////////// counter for hours in different dates ///////////////
+  $scope.allDates = [];
+  $scope.dateCounter = {};
 
-  // $scope.$watch('$scope.counter[id]', function(newValue, oldValue) {
-  //   if (newValue !== oldValue && timerRunning) {
-  //     $scope.startTimer(id);
-  //   }
-  // });
+  function getDateCounters() {
+    for (var i = 0; i < $scope.tasks.length; i++) {
+      $scope.dateCounter[$scope.tasks[i].id] = {};
+    }
+    for (var i = 0; i < $scope.completedTasks.length; i++) {
+      $scope.dateCounter[$scope.completedTasks[i].id] = {};
+    }
+    electronSvc.db.getAllTimes(getAllTimesCallback);
+  }
 
-
-  // $rootScope.$on('ready', function() {
-  //     var data = config.getServer()
-  //     if (data){
-  //         console.log("Connect", data);
-  //         connectToServer(data.ip, data.port, data.user, data.password)
-  //     } else {
-  //         // First time starting application
-  //         pageWelcome();
-  //     }
-  // });
-  //
-  // // Listen for incomming magnet links from the main process
-  // electron.ipc.on('magnet', function(event, data){
-  //     data.forEach(function(magnet){
-  //         $utorrentService.addTorrentUrl(magnet);
-  //     })
-  // })
+  function getAllTimesCallback(rows, err) {
+    if (err !== null) {
+      console.log(err);
+    } else {
+      console.log("All times: ");
+      console.log(rows);
+      $scope.$apply(function() {
+        for (var i = 0; i < rows.length; i++) {
+          var s = new Date(rows[i].start_time);
+          var e = new Date(rows[i].end_time);
+          var dayS = s.getDate();
+          var dayE = e.getDate();
+          var monthS = s.getMonth() + 1;
+          var monthE = e.getMonth() + 1;
+          var sString = monthS.toString() + "-" + dayS.toString();
+          var eString = monthE.toString() + "-" + dayE.toString();
+          if (!sString in $scope.allDates) {    // populate objects
+            $scope.allDates.push(sString);
+          }
+          if (!eString in $scope.allDates) {
+            $scope.allDates.push(eString);
+          }
+          if (!'total' in $scope.dateCounter[rows[i].id]) {
+            $scope.dateCounter[rows[i].id]['total'] = 0
+          }
+          if (!sString in $scope.dateCounter[rows[i].id]) {
+            $scope.dateCounter[rows[i].id][sString] = 0
+          }
+          if (!eString in $scope.dateCounter[rows[i].id]) {
+            $scope.dateCounter[rows[i].id][eString] = 0
+          }
+          // add time
+          if (dayS != dayE) {
+            $scope.dateCounter[rows[i].id][sString] += Math.ceil(24-s.hour());
+            $scope.dateCounter[rows[i].id][eString] += Math.ceil(s.hour());
+            $scope.dateCounter[rows[i].id]['total'] += Math.ceil(24-s.hour()) + Math.ceil(s.hour());
+          } else {
+            $scope.dateCounter[rows[i].id][sString] += Math.ceil((rows[i].end_time-rows[i].start_time)/3600000);
+            $scope.dateCounter[rows[i].id]['total'] += Math.ceil((rows[i].end_time-rows[i].start_time)/3600000);
+          }
+        }
+      });
+    }
+  }
 
   function computeTotalTaskTime() {
     electronSvc.db.getTaskTime(getTaskTimeCallback)
@@ -103,6 +144,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       } else {
         $scope.timer[id] = 0;
         $scope.timerRunning[id] = false;
+        computeTime(id);
       }
     }
     // console.log(taskMap);
@@ -116,7 +158,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       console.log(rows);
       $scope.$apply(function() {
         for (var i = 0; i < rows.length; i++) {
-          $scope.totalTime[rows[i].project_id] = Math.floor(rows[i].totalTime / 3600000)   // returns milliseconds
+          $scope.totalTime[rows[i].project_id] = Math.floor(rows[i].totalTime / 1000)   // returns milliseconds
+          computeTotalTime(rows[i].project_id);
         }
       });
     }
@@ -191,8 +234,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     if (task.tracking == 1) {
       $window.alert("Project " + task.name + " is tracking already!");
     } else {
-      electronSvc.db.startTracking(task.id, startStopCallback);
       restartTimer(task.id);
+      electronSvc.db.startTracking(task.id, startStopCallback);
     }
   }
 
@@ -201,8 +244,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     if (task.tracking == 0) {
       $window.alert("Project is not tracking!");
     } else {
-      electronSvc.db.stopTracking(task.id, task.updated_at, startStopCallback);
       stopTimer(task.id);
+      electronSvc.db.stopTracking(task.id, task.updated_at, startStopCallback);
     }
   };
 
@@ -219,7 +262,6 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
         electronSvc.db.archiveTask(task.id, 0, task.updated_at, archiveActivateCallback);
       }
     }
-    // $window.alert("Project " + task.id + " archived.");
   };
 
   $scope.activateTask = function(task) {
@@ -238,7 +280,10 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   };
 
   $scope.gotoPage = function(page) {
-      $scope.page = page;
+    if (page == 'summary') {
+      getDateCounters();
+    }
+    $scope.page = page;
   };
 
 }]);

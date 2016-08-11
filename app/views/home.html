@@ -3,16 +3,21 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
-        <h3>Active projects</h3>
+        <h3>Active Projects</h3>
         <br>
         <div class="form-group" ng-repeat="task in tasks">
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
             <strong>{{task.name}}</strong>
+            <!-- <strong>{{task.tracking}}</strong> -->
           </div>
           <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+            <span>Total {{ totalHours[task.id] }} h : {{ totalMinutes[task.id] }} m : {{ totalSeconds[task.id] }} s</span>
+          </div>
+          <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
             <span>{{ hours[task.id] }} h : {{ minutes[task.id] }} m : {{ seconds[task.id] }} s</span>
+            <!-- <time-counter/> -->
           </div>
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
             <div class="button-group pull-right">
               <button type="button" class="btn btn-default" ng-disable="timerRunning[task.id]" ng-click="startTracking(task)">
                 <span class="icon icon-play"></span>
@@ -32,16 +37,20 @@
     <br>
     <div class="row">
       <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
-        <h3>Completed projects</h3>
+        <h3>Completed Projects</h3>
         <br>
         <div class="form-group" ng-repeat="task in completedTasks">
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
             <strong>{{task.name}}</strong>
           </div>
           <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            Total hours: {{totalTime[task.id].hours}}
+            <!-- Total hours: {{totalTime[task.id].hours}} -->
+            <span>Total {{ totalHours[task.id] }} h : {{ totalMinutes[task.id] }} m : {{ totalSeconds[task.id] }} s</span>
           </div>
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+            <!-- Total hours: {{totalTime[task.id].hours}} -->
+          </div>
+          <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
             <button type="button" class="btn btn-default pull-right" ng-click="activateTask(task)">
               <span class="icon icon icon-flash"></span>
             </button>

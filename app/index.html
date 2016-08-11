@@ -29,7 +29,7 @@
               <span class="icon icon-list-add icon-text"></span>
               New Project
             </button>
-            <button class="btn btn-default">
+            <button class="btn btn-default" ng-click="gotoPage('summary')">
               <span class="icon icon-export icon-text"></span>
               Summary View
             </button>
@@ -43,7 +43,7 @@
 
       <div class="window-content">
         <div class="pane-group">
-          <div class="pane-one-third sidebar">
+          <div class="pane-one-fourth sidebar">
             <ul class="list-group">
               <li class="list-group-item" ng-repeat="task in tasks">
                 <img class="img-circle media-object pull-left" src="img/zh.png" width="32" height="32">
@@ -72,6 +72,9 @@
               <div ng-switch-when="newTask">
                 <div ng-include="'./views/newTask.html'"></div>
               </div>
+              <div ng-switch-when="summary">
+                <div ng-include="'./views/summary.html'"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -81,6 +84,7 @@
     <!-- Dependencies -->
     <script src="js/setup.js"></script>
     <script src="js/services/electronSvc.js"></script>
+    <!-- <script src="js/directives/time.js"></script> -->
     <script src="js/controllers/main.js"></script>
 
   </body>
