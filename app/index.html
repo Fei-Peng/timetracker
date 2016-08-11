@@ -11,6 +11,7 @@
     <!-->In Electron, this is the correct way to include jQuery<-->
     <script>window.$ = require('./js/vendor/jquery-3.1.0.min.js');</script>
     <script src="js/vendor/angular-1.5.8.min.js"></script>
+
   </head>
 
   <body ng-controller="mainController">
@@ -26,11 +27,11 @@
           <div class="btn-group">
             <button class="btn btn-default" ng-click="gotoPage('newTask')">
               <span class="icon icon-list-add icon-text"></span>
-              New Task
+              New Project
             </button>
             <button class="btn btn-default">
               <span class="icon icon-export icon-text"></span>
-              Export..
+              Summary View
             </button>
           </div>
 
@@ -42,13 +43,21 @@
 
       <div class="window-content">
         <div class="pane-group">
-          <div class="pane-one-fourth sidebar">
+          <div class="pane-one-third sidebar">
             <ul class="list-group">
               <li class="list-group-item" ng-repeat="task in tasks">
                 <img class="img-circle media-object pull-left" src="img/zh.png" width="32" height="32">
                 <div class="media-body">
                   <strong>{{task.name}}</strong>
-                  <span class="icon icon icon-cancel-circled media-object pull-right"></span>
+                  <span class="icon icon icon-archive media-object pull-right" ng-click="archiveTask(task)"></span>
+                  <p>{{task.description}}</p>
+                </div>
+              </li>
+              <li class="list-group-item" ng-repeat="task in completedTasks">
+                <img class="img-circle media-object pull-left" src="img/zh1.png" width="32" height="32">
+                <div class="media-body">
+                  <strong>{{task.name}}</strong>
+                  <span class="glyphicon glyphicon-check pull-right"></span>
                   <p>{{task.description}}</p>
                 </div>
               </li>
@@ -69,10 +78,9 @@
       </div>
     </div>
 
-
     <!-- Dependencies -->
     <script src="js/setup.js"></script>
-    <script src="js/services/db.js"></script>
+    <script src="js/services/electronSvc.js"></script>
     <script src="js/controllers/main.js"></script>
 
   </body>
