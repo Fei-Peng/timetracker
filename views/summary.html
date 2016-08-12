@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-11 col-md-11 col-sm-12 col-xs-12">
+        <div class="page-header">
+          <h1>Summary&nbsp;&nbsp;&nbsp;<small>Hours by Day</small></h1>
+        </div>
+        <!--<br>-->
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th ng-repeat="date in allDates">{{date}}</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="task in tasks">
+              <td>{{task.name}}</td>
+              <td ng-repeat="date in allDates">{{dateCounter[task.name][date]}}</td>
+              <td>{{dateCounter[task.name]['total']}}</td>
+            </tr>
+            <!--<tr ng-repeat="task in completedTasks">
+              <td>{{task.name}}</td>
+              <td ng-repeat="date in allDates">{{dateCounter[task.name][date]}}</td>
+              <td>{{dateCounter[task.name]['total']}}</td>
+            </tr>-->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-lg-11 col-md-11 col-sm-12 col-xs-12">
+        <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+        </div>
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+          <div class="well well-lg">
+  <canvas id="bar" class="chart chart-bar" chart-data="data" chart-labels="allDates" chart-series="series" chart-options="chartOptions"></canvas>
+          </div>        
+        </div>
+      </div>
+    </div>
+  </div>

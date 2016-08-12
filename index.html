@@ -7,11 +7,18 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/photon.css">
+    <style type="text/css">
+      input.ng-invalid.ng-touched {
+        /*background-color: #FA787E;*/
+        background-color: #F08080;
+      }
+    </style>
 
-    <!-->In Electron, this is the correct way to include jQuery<-->
-    <script>window.$ = require('./js/vendor/jquery-3.1.0.min.js');</script>
-    <script src="js/vendor/angular-1.5.8.min.js"></script>
-
+    <!-- In Electron, this is the correct way to include jQuery -->
+    <!--<script>window.$ = require('./node_modules/jquery/dist/jquery.min.js');</script>-->
+    <script src="node_modules/angular/angular.min.js"></script>
+    <script src="node_modules/chart.js/dist/Chart.min.js"></script>
+    <script src="node_modules/angular-chart.js/dist/angular-chart.min.js"></script>
   </head>
 
   <body ng-controller="mainController">
@@ -19,18 +26,17 @@
     <div class="window">
 
       <header class="toolbar toolbar-header">
-        <br>
-        <div class="toolbar-actions">
-          <button class="btn btn-default active" ng-click="gotoPage('home')">
+        <div class="toolbar-actions" style="padding-top: 10px; padding-bottom: 10px;">
+          <button class="btn btn-default active" ng-click="gotoPage('home')" ng-class="homeClass">
             <span class="icon icon-home"></span>
           </button>
           <div class="btn-group">
-            <button class="btn btn-default" ng-click="gotoPage('newTask')">
+            <button class="btn btn-default" ng-click="gotoPage('newTask')" ng-class="newTaskClass">
               <span class="icon icon-list-add icon-text"></span>
               New Project
             </button>
-            <button class="btn btn-default" ng-click="gotoPage('summary')">
-              <span class="icon icon-export icon-text"></span>
+            <button class="btn btn-default" ng-click="gotoPage('summary')" ng-class="summaryClass">
+              <span class="icon icon-chart-pie icon-text"></span>
               Summary View
             </button>
           </div>
@@ -49,7 +55,7 @@
                 <img class="img-circle media-object pull-left" src="img/zh.png" width="32" height="32">
                 <div class="media-body">
                   <strong>{{task.name}}</strong>
-                  <span class="icon icon icon-archive media-object pull-right" ng-click="archiveTask(task)"></span>
+                  <span class="icon icon icon-tools media-object pull-right"></span>
                   <p>{{task.description}}</p>
                 </div>
               </li>
