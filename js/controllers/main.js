@@ -79,14 +79,26 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
                               ticks: {
                                 min: 0,
                                 max: 24
+                              },
+                              scaleLabel: {
+                                display: true,
+                                labelString: 'Date'
                               }
                             }],
                             yAxes: [{
                               ticks: {
                                 beginAtZero:true
+                              },
+                              scaleLabel: {
+                                display: true,
+                                labelString: 'Hours'
                               }
-                            }],
-                          }
+                            }]
+                          },
+                          // title: {
+                          //     display: true,
+                          //     text: 'Custom Chart Title'
+                          // }
                         };
 
   function getDateCounters() {
