@@ -8,7 +8,7 @@ var file = dataPath + "/TimeTrackerApp/timetracker.sql";
 
 var db;
 var showWelcomeWindow = false;
-fs.access(file, fs.F_OK, startDb)
+fs.access(file, fs.F_OK, startDb);
 
 function startDb(err) {
   if (!err) {
@@ -29,18 +29,9 @@ function startDb(err) {
       this.run("CREATE TABLE IF NOT EXISTS `projects` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` varchar(255) not null, `description` varchar(255), `finished` integer, `tracking` integer, `created_at` datetime, `updated_at` datetime)", dbFuncs.printError);
       this.run("CREATE TABLE IF NOT EXISTS `times` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `project_id` varchar(255) not null, `start_time` datetime, `end_time` datetime, FOREIGN KEY(project_id) REFERENCES projects(id))", dbFuncs.printError);
     });
-    db.prepareStatements();
-  } else {
-    console.log("Run prepare statements..");
-    db.prepareStatements();
-  }  
-}
-
-function startApp() {
-  createWindow();
-  if (showWelcomeWindow) {
-    createWelcomeWindow();
-  }
+  } 
+  console.log("Run prepare statements..");
+  db.prepareStatements();  
 }
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -70,7 +61,10 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
-  startApp();
+  createWindow();
+  if (showWelcomeWindow) {
+    createWelcomeWindow();
+  }
 });
 
 // Quit when all windows are closed.
