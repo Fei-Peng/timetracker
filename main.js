@@ -1,11 +1,16 @@
 const {app, BrowserWindow, ipcMain} = require('electron');
+const dbFuncs = require('./lib/db.js');
 
 // check if db exists, if not show welcome window
 var fs = require("fs");
-var file = "./timetracker.sql";
+var dataPath = app.getPath("appData");
+var file = dataPath + "/TimeTrackerApp/timetracker.sql";
 
+var db;
 var showWelcomeWindow = false;
-fs.access(file, fs.F_OK, function(err) {
+fs.access(file, fs.F_OK, startDb)
+
+function startDb(err) {
   if (!err) {
     console.log("DB file ok. Proceed");
   } else {
@@ -13,10 +18,30 @@ fs.access(file, fs.F_OK, function(err) {
     console.log("No DB file or not accessible! Show welcome screen");
     showWelcomeWindow = true;
   }
-});
+  db = new dbFuncs.Db(file);
+  global.db = db;
 
-const db = require('./lib/db.js');
-global.db = db;
+  // initialize db if necessary. Wait for tables to be created before running prepare statements
+  if (showWelcomeWindow) {
+    console.log("Initialize empty db..");
+    // initialize db
+    db.dbConnect.serialize(function() {
+      this.run("CREATE TABLE IF NOT EXISTS `projects` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` varchar(255) not null, `description` varchar(255), `finished` integer, `tracking` integer, `created_at` datetime, `updated_at` datetime)", dbFuncs.printError);
+      this.run("CREATE TABLE IF NOT EXISTS `times` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `project_id` varchar(255) not null, `start_time` datetime, `end_time` datetime, FOREIGN KEY(project_id) REFERENCES projects(id))", dbFuncs.printError);
+    });
+    db.prepareStatements();
+  } else {
+    console.log("Run prepare statements..");
+    db.prepareStatements();
+  }  
+}
+
+function startApp() {
+  createWindow();
+  if (showWelcomeWindow) {
+    createWelcomeWindow();
+  }
+}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -30,7 +55,7 @@ function createWindow () {
   win.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
-  // win.webContents.openDevTools();
+  win.webContents.openDevTools();
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -45,10 +70,7 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
-  createWindow();
-  if (showWelcomeWindow) {
-    createWelcomeWindow();
-  }
+  startApp();
 });
 
 // Quit when all windows are closed.

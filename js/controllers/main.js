@@ -6,8 +6,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   $scope.page = 'home';
   $scope.tasks = [];
   $scope.completedTasks = [];
-  electronSvc.db.getTasks(getActiveTasksCallback);
-  electronSvc.db.getCompletedTasks(getCompletedTasksCallback);
+  electronSvc.db.getTasksStmt.all(0, getActiveTasksCallback);
+  electronSvc.db.getTasksStmt.all(1, getCompletedTasksCallback);
 
   $scope.totalTime = {};
   $scope.totalSeconds = {};
@@ -108,7 +108,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     // for (var i = 0; i < $scope.completedTasks.length; i++) {
     //   $scope.dateCounter[$scope.completedTasks[i].name] = {};
     // }
-    electronSvc.db.getAllTimes(getAllTimesCallback);
+    electronSvc.db.allTimesStmt.all(getAllTimesCallback);
   }
 
   // this now only gets active tasks
@@ -213,10 +213,6 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     }
   }
 
-  function getTotalTaskTime() {
-    electronSvc.db.getTaskTime(getTaskTimeCallback)
-  }
-
   function updateTrackingMap() {
     for (var i = 0; i < $scope.tasks.length; i++) {
       // taskMap[$scope.tasks[i].id] = $scope.tasks[i];
@@ -284,7 +280,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
         // for (var i = 0; i < rows.length; i++) {
         //   $scope.completedTasks.push(rows[i]);
         // }
-        getTotalTaskTime();
+        electronSvc.db.taskTimeStmt.all(getTaskTimeCallback);
       });
     }
   }
@@ -295,7 +291,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("New task " + $scope.newTask.name + " created.");
       $window.alert("New task " + $scope.newTask.name + " created.");
-      electronSvc.db.getTasks(getActiveTasksCallback);
+      electronSvc.db.getTasksStmt.all(0, getActiveTasksCallback);
       $scope.gotoPage('home');
     }
   }
@@ -306,7 +302,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       // update with new
       console.log("Success. Update with new tasks.");
-      electronSvc.db.getTasks(getActiveTasksCallback);
+      electronSvc.db.getTasksStmt.all(0, getActiveTasksCallback);
     }
   }
 
@@ -316,8 +312,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       // update with new
       console.log("Success. Update with new tasks.");
-      electronSvc.db.getTasks(getActiveTasksCallback);
-      electronSvc.db.getCompletedTasks(getCompletedTasksCallback);
+      electronSvc.db.getTasksStmt.all(0, getActiveTasksCallback);
+      electronSvc.db.getTasksStmt.all(1, getCompletedTasksCallback);
     }
   }
 
@@ -327,9 +323,15 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       $window.alert("Project " + task.name + " is tracking already!");
     } else {
       restartTimer(task.id);
-      electronSvc.db.startTracking(task.id, startStopCallback);
+      electronSvc.db.startStopTrackingStmt.run([1, Date.now(), task.id], startStopCallback);
     }
   };
+
+  function printErr(err) {
+    if (err != null) {
+      console.log(Err);
+    }
+  }
 
   $scope.stopTracking = function(task) {
     console.log("Stop project tracking clicked: " + task.id);
@@ -337,7 +339,8 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       $window.alert("Project is not tracking!");
     } else {
       stopTimer(task.id);
-      electronSvc.db.stopTracking(task.id, task.updated_at, startStopCallback);
+      electronSvc.db.insertTimeStmt.run([task.id, task.updated_at, Date.now()], printErr);
+      electronSvc.db.startStopTrackingStmt.run([0, Date.now(), task.id], startStopCallback);
     }
   };
 
@@ -346,12 +349,14 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     if (task.tracking == 1) {
       if ($window.confirm("Project " + task.name + " is tracking. Stop now and archive?")) {
         stopTimer(task.id);
-        electronSvc.db.archiveTask(task.id, 1, task.updated_at, archiveActivateCallback);
+        electronSvc.db.insertTimeStmt.run([task.id, task.updated_at, Date.now()], printErr);
+        electronSvc.db.startStopTrackingStmt.run([0, Date.now(), task.id], startStopCallback);
+        electronSvc.db.archiveStmt.run([Date.now(), task.id], archiveActivateCallback);
       }
     } else {
       if ($window.confirm("Archive project " + task.name + " now?")) {
         stopTimer(task.id);
-        electronSvc.db.archiveTask(task.id, 0, task.updated_at, archiveActivateCallback);
+        electronSvc.db.archiveStmt.run([Date.now(), task.id], archiveActivateCallback);
       }
     }
   };
@@ -359,7 +364,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   $scope.activateTask = function(task) {
     console.log("Activate project clicked: " + task.id);
     if ($window.confirm("Activate project " + task.name + " now?")) {
-      electronSvc.db.activateTask(task.id, archiveActivateCallback);
+      electronSvc.db.activateStmt.run([Date.now(), task.id], archiveActivateCallback);
     }
   };
 
@@ -368,7 +373,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     $scope.newTask = angular.copy(newTask);
     var args = [$scope.newTask.name, $scope.newTask.description, 0, 0, Date.now(), Date.now()];
     console.log("New task arguments: " + args);
-    electronSvc.db.submitNewTask(args, submitNewTaskCallback);
+    electronSvc.db.insertTaskStmt.run(args, submitNewTaskCallback);
   };
 
   $scope.gotoPage = function(page) {
