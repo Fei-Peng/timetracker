@@ -3,8 +3,9 @@ const dbFuncs = require('./lib/db.js');
 
 // check if db exists, if not show welcome window
 var fs = require("fs");
-var dataPath = app.getPath("appData");
-var file = dataPath + "/TimeTrackerApp/timetracker.sql";
+var path = require('path');
+var dataPath = app.getPath("userData");
+var file = path.join(dataPath, "db.sql");
 
 var db;
 var showWelcomeWindow = false;
@@ -92,6 +93,7 @@ function createWelcomeWindow () {
 
   // and load the index.html of the app.
   welcomeWindow.loadURL(`file://${__dirname}/views/welcome.html`);
+  welcomeWindow.focus();
 
   // Emitted when the window is closed.
   welcomeWindow.on('closed', () => {
