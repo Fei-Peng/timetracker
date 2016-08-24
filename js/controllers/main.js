@@ -324,6 +324,16 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     }
   }
 
+  function deleteTaskCallback(err) {
+    if (err !== null) {
+      console.log("Delete task error: " + err);
+    } else {
+      // update with new
+      console.log("Success. Update archived tasks.");
+      electronSvc.db.getTasksStmt.all(1, getCompletedTasksCallback);
+    }
+  }
+
   $scope.startTracking = function(task) {
     console.log("Start project tracking clicked: " + task.id);
     if (task.tracking == 1) {
@@ -374,6 +384,16 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       electronSvc.db.activateStmt.run([Date.now(), task.id], archiveActivateCallback);
     }
   };
+
+  $scope.deleteTask = function(task) {
+    console.log("Delete project clicked: " + task.id);
+    if ($window.confirm("Delete project " + task.name + " now? This is not reversable.")) {
+      electronSvc.db.dbConnect.serialize(function() {
+        electronSvc.db.deleteTaskStmt.run(task.id);
+        electronSvc.db.deleteTimeStmt.run(task.id, deleteTaskCallback);
+      });
+    }
+  }
 
   $scope.submitNewTask = function(newTask) {
     // statement is prepared already

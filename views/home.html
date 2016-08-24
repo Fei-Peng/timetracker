@@ -57,9 +57,14 @@
                 <span></span>
               </div>
               <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
-                <button type="button" class="btn btn-default pull-right" ng-click="activateTask(task)">
-                  <span class="icon icon icon-flash"></span>
-                </button>
+                <div class="button-group pull-right">
+                  <button type="button" class="btn btn-default" ng-click="activateTask(task)">
+                    <span class="icon icon icon-flash"></span>
+                  </button>
+                  <button type="button" class="btn btn-default" ng-click="deleteTask(task)">
+                    <span class="icon icon icon-trash"></span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
