@@ -247,6 +247,13 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
           $scope.totalTime[rows[i].project_id] = Math.floor(rows[i].totalTime / 1000);   // returns milliseconds
           computeTotalTime(rows[i].project_id);
         }
+        for (var t = 0; t < $scope.completedTasks.length; t++) {
+          var id = $scope.completedTasks[t].id
+          if (!(id in $scope.totalTime)) {
+            $scope.totalTime[id] = 0;
+            computeTotalTime(id);
+          }
+        }
       });
     }
   }
