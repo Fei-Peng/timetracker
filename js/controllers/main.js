@@ -71,8 +71,9 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   ///////////////// summary page: counter for hours in different dates, chart ///////////////
   $scope.allDates = [];
   $scope.dateCounter = {};
-  $scope.series = [];     // for chart series label
-  $scope.data = [];       // for chart data
+  // for chart
+  $scope.series = [];     // series label
+  $scope.data = [];       // data
   $scope.chartOptions = {scales: {
                             xAxes: [{
                               stacked: true,
@@ -118,13 +119,14 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("All times: ");
       // console.log(rows);
+      var dayInMilliseconds = 3600000 * 24;
       $scope.$apply(function() {
         for (var i = 0; i < rows.length; i++) {
           var s = new Date(rows[i].start_time);
           var e = new Date(rows[i].end_time);
-          var dayS = s.getDate();
+          var dayS = s.getDate();           // getDate returns 1-31
           var dayE = e.getDate();
-          var monthS = s.getMonth() + 1;
+          var monthS = s.getMonth() + 1;    // getMonth returns 0-11
           var monthE = e.getMonth() + 1;
           var sString = monthS.toString() + "-" + dayS.toString();
           var eString = monthE.toString() + "-" + dayE.toString();
@@ -143,12 +145,12 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
           var dateE = null;
           var dayDiff = null;
           if (dayS != dayE) {
-            dateSPlusOne = new Date(s.getFullYear(), monthS-1, dayS+1);
-            dateE = new Date(e.getFullYear(), monthS-1, dayE);
+            dateSPlusOne = new Date(s.getFullYear(), monthS-1, dayS+1);   // Date converts if e.g. day = 32
+            dateE = new Date(e.getFullYear(), monthE-1, dayE);
             if (dateE > dateSPlusOne) {
-              dayDiff = Math.round((dateE.getTime() - dateSPlusOne.getTime()) / 3600000 / 24);
+              dayDiff = Math.round((dateE.getTime() - dateSPlusOne.getTime()) / dayInMilliseconds);
               for (var d = 0; d < dayDiff; d++) {
-                var dd = new Date(dateSPlusOne.getTime() + d * 24 * 3600000);
+                var dd = new Date(dateSPlusOne.getTime() + d * dayInMilliseconds);
                 var dString = dd.getMonth().toString() + "-" + dd.getDay().toString();
                 if (!(dString in $scope.dateCounter[rows[i].name])) {
                   $scope.dateCounter[rows[i].name][dString] = 0
@@ -172,11 +174,9 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
             $scope.dateCounter[rows[i].name]['total'] += dateSPlusOne.getTime() - rows[i].start_time + rows[i].end_time - dateE.getTime();
             if (!dayDiff) {
               for (var d = 0; d < dayDiff; d++) {
-                var dd = new Date(dateSPlusOne.getTime() + d * 24 * 3600000);
+                var dd = new Date(dateSPlusOne.getTime() + d * dayInMilliseconds);
                 var dString = dd.getMonth().toString() + "-" + dd.getDay().toString();
-                if (!(dString in $scope.dateCounter[rows[i].name])) {
-                  $scope.dateCounter[rows[i].name][dString] += 3600000 * 24;
-                }
+                $scope.dateCounter[rows[i].name][dString] += dayInMilliseconds;
               }
             }
           } else {
@@ -184,12 +184,12 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
             $scope.dateCounter[rows[i].name]['total'] += rows[i].end_time - rows[i].start_time;
           }
         }
-        // go through and convert to hrs
+        // when all adds are done, go through and convert to hrs
         for (var name in $scope.dateCounter) {
           if ($scope.dateCounter.hasOwnProperty(name)) {
             for (var c in $scope.dateCounter[name]) {
               if ($scope.dateCounter[name].hasOwnProperty(c)) {
-                $scope.dateCounter[name][c] = Math.round($scope.dateCounter[name][c]/360000) / 10;
+                $scope.dateCounter[name][c] = Math.round($scope.dateCounter[name][c]/3600000) / 10;
               }
             }
           }
@@ -202,7 +202,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
             if (!($scope.allDates[d] in $scope.dateCounter[$scope.series[i]])) {
               dataSeries.push(0);
             } else {
-              dataSeries.push($scope.dateCounter[$scope.series[i]][$scope.allDates[d]]); 
+              dataSeries.push($scope.dateCounter[$scope.series[i]][$scope.allDates[d]]);
             }
           }
           $scope.data.push(dataSeries);
@@ -416,7 +416,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
         $scope.summaryClass = '';
         break;
       case 'summary':
-        getDateCounters();  
+        getDateCounters();
         $scope.homeClass = '';
         $scope.newTaskClass = '';
         $scope.summaryClass = 'active';

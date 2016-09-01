@@ -1,6 +1,6 @@
 {
   "name": "TimeTracker",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "Cross desktop app for tracking time on different projects, built on Electron with AngularJS",
   "main": "main.js",
   "scripts": {
