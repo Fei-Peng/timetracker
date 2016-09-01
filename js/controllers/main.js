@@ -298,6 +298,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("New task " + $scope.newTask.name + " created.");
       $window.alert("New task " + $scope.newTask.name + " created.");
+      $scope.newTask = {}
       electronSvc.db.getTasksStmt.all(0, getActiveTasksCallback);
       $scope.gotoPage('home');
     }
