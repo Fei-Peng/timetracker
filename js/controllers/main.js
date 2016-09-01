@@ -189,7 +189,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
           if ($scope.dateCounter.hasOwnProperty(name)) {
             for (var c in $scope.dateCounter[name]) {
               if ($scope.dateCounter[name].hasOwnProperty(c)) {
-                $scope.dateCounter[name][c] = Math.round($scope.dateCounter[name][c]/3600000) / 10;
+                $scope.dateCounter[name][c] = Math.round($scope.dateCounter[name][c]/360000) / 10;
               }
             }
           }
