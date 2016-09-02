@@ -47,7 +47,7 @@ function createWindow () {
   win.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -111,7 +111,7 @@ ipcMain.on("AUTOSTOP", function(event, arg) {
   // open confirmation window
   createAutostopWindow();
   // ipcMain.sendSync("AUTOSTOPWIN");
-  event.sender.send("AUTOSTOPWIN");
+  // event.sender.send("AUTOSTOPWIN");
 });
 
 ipcMain.on("CloseAutoStopWin", function(event, arg) {
@@ -120,7 +120,7 @@ ipcMain.on("CloseAutoStopWin", function(event, arg) {
 
 function createAutostopWindow () {
   // Create the browser window.
-  autostopWindow = new BrowserWindow({width: 350, height: 200, parent: win});    // parent makes it go on top
+  autostopWindow = new BrowserWindow({width: 500, height: 180, parent: win});    // parent makes it go on top
 
   // and load the index.html of the app.
   autostopWindow.loadURL(`file://${__dirname}/views/autostop.html`);
@@ -134,3 +134,12 @@ function createAutostopWindow () {
     autostopWindow = null;
   })
 }
+
+// from autostop window to backend to main window
+ipcMain.on("AutoStopped", function(event, arg) {
+  win.webContents.send("AutoStopped");
+});
+
+ipcMain.on("AutoStoppedAddTime", function(event, arg) {
+  win.webContents.send("AutoStoppedAddTime");
+});
