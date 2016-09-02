@@ -35,11 +35,11 @@ angular.module("timeTrackerApp").controller("autostopController", ["$rootScope",
     electronSvc.ipcRenderer.send("CloseAutoStopWin");
   }
 
-  $scope.autoStopAddTime = function() {
-    console.log("Add 1 hr before autostop. (autostop.js)");
+  $scope.autoStopAddTime = function(mins) {
+    console.log("Add " + mins + " mins before autostop. (autostop.js)");
     $interval.cancel(countDownInterval);
     countDownInterval = undefined;
-    electronSvc.ipcRenderer.send("AutoStoppedAddTime");
+    electronSvc.ipcRenderer.send("AutoStoppedAddTime", mins);
     electronSvc.ipcRenderer.send("CloseAutoStopWin");
   }
   

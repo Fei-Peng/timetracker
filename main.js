@@ -140,6 +140,6 @@ ipcMain.on("AutoStopped", function(event, arg) {
   win.webContents.send("AutoStopped");
 });
 
-ipcMain.on("AutoStoppedAddTime", function(event, arg) {
-  win.webContents.send("AutoStoppedAddTime");
+ipcMain.on("AutoStoppedAddTime", function(event, mins) {
+  win.webContents.send("AutoStoppedAddTime", mins);
 });

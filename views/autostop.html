@@ -23,10 +23,10 @@
               <div class="page-header">
                 <h4>Stop all running projects? Proceeding in {{countDown}} seconds.</h4>
               </div>
-              <!--<br>-->
               <div class="form-actions">
                 <button type="submit" class="btn btn-form btn-primary" ng-click="autoStop()">OK</button>
-                <button class="btn btn-form btn-default" ng-click="autoStopAddTime()">Postpone for One Hour</button>
+                <button class="btn btn-form btn-default" ng-click="autoStopAddTime(60)">Postpone for One Hour</button>
+                <button class="btn btn-form btn-default" ng-click="autoStopAddTime(15)">Postpone for 15 Minutes</button>
               </div>
             </div>
           </div>

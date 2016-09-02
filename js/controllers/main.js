@@ -19,9 +19,9 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   /////////////// auto stop ///////////////
   $scope.editingStopTime = false;
   $scope.autoStopTime = {}
-  $scope.autoStopTime['hr'] = 14;
+  $scope.autoStopTime['hr'] = 17;
   $scope.autoStopTime['hr0'] = "";
-  $scope.autoStopTime['min'] = 34;
+  $scope.autoStopTime['min'] = 30;
   $scope.autoStopTime['min0'] = "";
   var cron = undefined;
 
@@ -32,20 +32,32 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   }
 
   $scope.saveStopTime = function() {
+    var hr = parseInt($scope.autoStopTime.hr);
+    var min = parseInt($scope.autoStopTime.min);
+    if (isNaN(hr) || isNaN(min) || hr > 23 || min > 59) {
+      $window.alert("Time not valid!");
+      return;
+    }
     $timeout(function() {
       $scope.editingStopTime = false;
-      if ($scope.autoStopTime.hr < 10) {
-        $scope.autoStopTime.hr0 = "0"; 
-      } else {
-        $scope.autoStopTime.hr0 = "";
-      }
-      if ($scope.autoStopTime.min < 10) {
-        $scope.autoStopTime.min0 = "0"; 
-      } else {
-        $scope.autoStopTime.min0 = "";
-      }
+      $scope.autoStopTime.hr = hr;
+      $scope.autoStopTime.min = min;
+      check0();
       setupAutoStop();
     }, 0);
+  }
+
+  function check0() {
+    if ($scope.autoStopTime.hr < 10) {
+      $scope.autoStopTime.hr0 = "0"; 
+    } else {
+      $scope.autoStopTime.hr0 = "";
+    }
+    if ($scope.autoStopTime.min < 10) {
+      $scope.autoStopTime.min0 = "0"; 
+    } else {
+      $scope.autoStopTime.min0 = "";
+    }
   }
 
   function getMillisecUntilAutoStop() {
@@ -101,15 +113,21 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     setupAutoStop();
   });
 
-  electronSvc.ipcRenderer.on("AutoStoppedAddTime", function() {
-    console.log("Add 1 hr before autostop. (main.js)");
+  electronSvc.ipcRenderer.on("AutoStoppedAddTime", function(event, mins) {
+    console.log("Add " + mins + " mins before autostop. (main.js)");
     // $timeout.cancel(cron);
     var now = new Date();
     $timeout(function() {
-      $scope.autoStopTime.hr = now.getHours() + 1;
+      $scope.autoStopTime.min = now.getMinutes() + mins;
+      $scope.autoStopTime.hr = now.getHours();
+      if ($scope.autoStopTime.min >= 60) {
+        $scope.autoStopTime.min -= 60;
+        $scope.autoStopTime.hr += 1;
+      }
       if ($scope.autoStopTime.hr == 24) {
         $scope.autoStopTime.hr = 0;
       }
+      check0();
     }, 1000);
     setupAutoStop();
   });
