@@ -30,9 +30,9 @@ function startDb(err) {
       this.run("CREATE TABLE IF NOT EXISTS `projects` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` varchar(255) not null, `description` varchar(255), `finished` integer, `tracking` integer, `created_at` datetime, `updated_at` datetime)", dbFuncs.printError);
       this.run("CREATE TABLE IF NOT EXISTS `times` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `project_id` varchar(255) not null, `start_time` datetime, `end_time` datetime, FOREIGN KEY(project_id) REFERENCES projects(id))", dbFuncs.printError);
     });
-  } 
+  }
   console.log("Run prepare statements..");
-  db.prepareStatements();  
+  db.prepareStatements();
 }
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -47,7 +47,7 @@ function createWindow () {
   win.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
-  // win.webContents.openDevTools();
+  win.webContents.openDevTools();
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -65,7 +65,6 @@ app.on('ready', function() {
   createWindow();
   if (showWelcomeWindow) {
     createWelcomeWindow();
-    welcomeWindow.focus();
   }
 });
 
@@ -90,11 +89,11 @@ app.on('activate', () => {
 let welcomeWindow;
 function createWelcomeWindow () {
   // Create the browser window.
-  welcomeWindow = new BrowserWindow({width: 550, height: 661});
+  welcomeWindow = new BrowserWindow({width: 550, height: 661, parent: win});
 
   // and load the index.html of the app.
   welcomeWindow.loadURL(`file://${__dirname}/views/welcome.html`);
-  welcomeWindow.focus();
+  // welcomeWindow.focus();
 
   // Emitted when the window is closed.
   welcomeWindow.on('closed', () => {
@@ -102,5 +101,36 @@ function createWelcomeWindow () {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     welcomeWindow = null;
+  })
+}
+
+// event handler
+let autostopWindow;
+ipcMain.on("AUTOSTOP", function(event, arg) {
+  console.log("Show auto stop window");
+  // open confirmation window
+  createAutostopWindow();
+  // ipcMain.sendSync("AUTOSTOPWIN");
+  event.sender.send("AUTOSTOPWIN");
+});
+
+ipcMain.on("CloseAutoStopWin", function(event, arg) {
+  autostopWindow.close();
+});
+
+function createAutostopWindow () {
+  // Create the browser window.
+  autostopWindow = new BrowserWindow({width: 350, height: 200, parent: win});    // parent makes it go on top
+
+  // and load the index.html of the app.
+  autostopWindow.loadURL(`file://${__dirname}/views/autostop.html`);
+  // autostopWindow.focus();
+
+  // Emitted when the window is closed.
+  autostopWindow.on('closed', () => {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    autostopWindow = null;
   })
 }

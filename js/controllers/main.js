@@ -1,5 +1,5 @@
 
-angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$scope", "$window", '$interval', 'electronSvc', function ($rootScope, $scope, $window, $interval, electronSvc) {
+angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$scope", "$window", '$interval', '$timeout', 'electronSvc', function ($rootScope, $scope, $window, $interval, $timeout, electronSvc) {
   // const PAGE_SETTINGS = 'settings';
   // const PAGE_WELCOME = 'welcome';
 
@@ -15,6 +15,71 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
   $scope.totalHours = {};
   $scope.newTask = {};
   // var taskMap = {};
+
+  /////////////// auto stop ///////////////
+  $scope.autoStopHr = 23;
+  $scope.autoStopMin = 41;
+  var countDownInterval = undefined;
+  var cron = undefined;
+
+  function getMillisecUntilAutoStop() {
+    var now = new Date();
+    var autoStopTime;
+    if (now.getHours() < $scope.autoStopHr || (now.getHours() == $scope.autoStopHr && now.getMinutes() < $scope.autoStopMin)) {
+      autoStopTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), $scope.autoStopHr, $scope.autoStopMin);
+    } else {    // tomorrow
+      autoStopTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, $scope.autoStopHr, $scope.autoStopMin);
+    }
+    var diff = autoStopTime - now;
+    console.log("Auto stop in " + diff + " milliseconds");
+    return autoStopTime - now;
+  }
+
+  function setupAutoStop() {
+    console.log("Set up autostop");
+    cron = $timeout(function() {
+      // kill all running timers, runs everyday at 5:00:00 PM.
+      console.log("Autostop triggered.");
+      for (var t in $scope.tasks) {
+        if ($scope.tasks[t].tracking == 1) {
+          electronSvc.ipcRenderer.send("AUTOSTOP");
+          // startCountDown();  // can't do this here: $timeout already does an $apply
+          break;
+                // console.log("Auto stop all tasks..");
+                // // if ($window.confirm("There are projects tracking. Stop all of them now?")) {
+                //   for (var task in rows) {
+                //     $scope.stopTracking(task);
+                //   }
+                // }
+        }
+      }
+    }, getMillisecUntilAutoStop());
+  }
+  setupAutoStop();
+
+  function startCountDown() {
+    console.log("Start countdown");
+    $timeout(function() {
+      $scope.countDown = 60;
+    }, 0);
+    countDownInterval = $interval(function() {
+      if ($scope.countDown > 0) {
+        // $timeout(function() {
+        $scope.countDown--;
+        // });
+        // console.log('tick');
+      } else {
+        $interval.cancel(countDownInterval);
+        countDownInterval = undefined;
+        $scope.autoStop();
+      }
+    }, 1000);
+  }
+
+  //
+  electronSvc.ipcRenderer.on("AUTOSTOPWIN", function(event, arg) {
+    startCountDown();
+  });
 
   /////////////// timer ///////////////
   $scope.timer = {};
@@ -120,7 +185,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       console.log("All times: ");
       // console.log(rows);
       var dayInMilliseconds = 3600000 * 24;
-      $scope.$apply(function() {
+      $timeout(function() {
         for (var i = 0; i < rows.length; i++) {
           var s = new Date(rows[i].start_time);
           var e = new Date(rows[i].end_time);
@@ -207,12 +272,13 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
           }
           $scope.data.push(dataSeries);
         }
-      });
+      }, 0);
       // console.log($scope.allDates);
       // console.log($scope.dateCounter);
     }
   }
 
+  //////////////////////// callbacks etc /////////////////////////////
   function updateTrackingMap() {
     for (var i = 0; i < $scope.tasks.length; i++) {
       // taskMap[$scope.tasks[i].id] = $scope.tasks[i];
@@ -242,7 +308,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("Task times: ");
       console.log(rows);
-      $scope.$apply(function() {
+      $timeout(function() {
         for (var i = 0; i < rows.length; i++) {
           $scope.totalTime[rows[i].project_id] = Math.floor(rows[i].totalTime / 1000);   // returns milliseconds
           computeTotalTime(rows[i].project_id);
@@ -254,7 +320,7 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
             computeTotalTime(id);
           }
         }
-      });
+      }, 0);
     }
   }
 
@@ -264,14 +330,14 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("Total tasks: " + rows.length);
       console.log(rows);
-      $scope.$apply(function() {
+      $timeout(function() {
         $scope.tasks = rows;
         // $scope.tasks.length = 0;
         // for (var i = 0; i < rows.length; i++) {
         //   $scope.tasks.push(rows[i]);
         // }
         updateTrackingMap();
-      });
+      }, 0);
     }
   }
 
@@ -281,14 +347,14 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
     } else {
       console.log("Total completed tasks: " + rows.length);
       console.log(rows);
-      $scope.$apply(function() {
+      $timeout(function() {
         $scope.completedTasks = rows;
         // $scope.completedTasks.length = 0;
         // for (var i = 0; i < rows.length; i++) {
         //   $scope.completedTasks.push(rows[i]);
         // }
         electronSvc.db.taskTimeStmt.all(getTaskTimeCallback);
-      });
+      }, 0);
     }
   }
 
@@ -333,6 +399,38 @@ angular.module("timeTrackerApp").controller("mainController", ["$rootScope", "$s
       console.log("Success. Update archived tasks.");
       electronSvc.db.getTasksStmt.all(1, getCompletedTasksCallback);
     }
+  }
+
+
+  //////////////////////// UI functions ////////////////////////
+  $scope.autoStop = function() {
+    console.log("Auto stop confirmed, stop all running jobs.");
+    var stopIds = [];
+    for (var t in $scope.tasks) {
+      if ($scope.tasks[t].tracking == 1) {
+        stopIds.push(t);
+      }
+    }
+    for (var t = 0; t < stopIds.length; t++) {
+      $scope.stopTracking($scope.tasks[stopIds[t]]);
+    }
+    // $timeout.cancel(cron);
+    electronSvc.ipcRenderer.send("CloseAutoStopWin");
+    setupAutoStop();
+  }
+
+  $scope.autoStopAddTime = function() {
+    console.log("Add 1 hr before autostop.");
+    // $timeout.cancel(cron);
+    var now = new Date();
+    $scope.autoStopHr = now.getHours() + 1;
+    if ($scope.autoStopHr == 24) {
+      $scope.autoStopHr = 0;
+    }
+    $interval.cancel(countDownInterval);
+    countDownInterval = undefined;
+    electronSvc.ipcRenderer.send("CloseAutoStopWin");
+    setupAutoStop();
   }
 
   $scope.startTracking = function(task) {

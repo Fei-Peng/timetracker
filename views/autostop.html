@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html ng-app="timeTrackerApp">
+  <head>
+    <meta charset="UTF-8">
+    <title>Stop All Projects</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/photon.css">
+
+    <script src="node_modules/angular/angular.min.js"></script>
+  </head>
+
+  <body ng-controller="mainController">
+
+    <div class="window">
+      <div class="window-content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-10 col-md-10 col-sm-11 col-xs-11">
+              <div class="page-header">
+                <h3>Auto stop all running projects, proceed in {{countDown}} seconds.</h3>
+              </div>
+              <br>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-form btn-primary" ng-click="autoStop()">OK</button>
+                <button class="btn btn-form btn-default" ng-click="autoStopAddTime()">Postpone for One Hour</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dependencies -->
+    <script src="js/setup.js"></script>
+    <script src="js/controllers/main.js"></script>
+
+  </body>
+</html>

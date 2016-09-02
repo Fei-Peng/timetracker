@@ -5,7 +5,7 @@ angular.module('timeTrackerApp').factory("electronSvc", [function() {
     const remote        = require('electron').remote;
 
     // Directly accesible modules
-    o.ipc               = require('electron').ipcRenderer;
+    o.ipcRenderer       = require('electron').ipcRenderer;
     o.shell             = require('electron').shell;
 
     //Remote moudles from main process
@@ -24,7 +24,7 @@ angular.module('timeTrackerApp').factory("electronSvc", [function() {
     o.autoUpdater       = remote.autoUpdater;
 
     // Custom resources
-    o.db            = remote.getGlobal('db');
+    o.db                = remote.getGlobal('db');
 
     // Return object
     return o;
